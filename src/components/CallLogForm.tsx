@@ -29,7 +29,9 @@ export default function CallLogForm({
   agentName,
   onSuccess,
 }: CallLogFormProps) {
-  const [responseType, setResponseType] = useState<CallResponseType>("answered_interested");
+  const [responseType, setResponseType] = useState<CallResponseType>(
+    "answered_interested",
+  );
   const [notes, setNotes] = useState("");
   const [followUpDate, setFollowUpDate] = useState("");
   const [loading, setLoading] = useState(false);
@@ -50,8 +52,8 @@ export default function CallLogForm({
       setNotes("");
       setFollowUpDate("");
       onSuccess?.();
-    } catch (error) {
-      console.error(error);
+    } catch {
+      // Silenced
     } finally {
       setLoading(false);
     }

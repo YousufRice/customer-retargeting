@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { tablesDB, RETARGETING_DATABASE_ID, WORDPRESS_CUSTOMERS_TABLE_ID, ID } from "@/lib/appwrite";
+import {
+  tablesDB,
+  RETARGETING_DATABASE_ID,
+  WORDPRESS_CUSTOMERS_TABLE_ID,
+  ID,
+} from "@/lib/appwrite";
+import { logError } from "@/lib/logger";
 
 function parseCSV(text: string): Record<string, string>[] {
   const lines = text.split(/\r?\n/).filter((line) => line.trim());
   if (lines.length < 2) return [];
 
-  const headers = lines[0].split(",").map((h) => h.trim().replace(/^"|"$/g, ""));
+  const headers = lines[0]
+    .split(",")
+    .map((h) => h.trim().replace(/^"|"$/g, ""));
   const rows: Record<string, string>[] = [];
 
   for (let i = 1; i < lines.length; i++) {
@@ -59,14 +67,14 @@ export async function POST(request: NextRequest) {
     if (!file) {
       return NextResponse.json(
         { success: false, message: "No file provided" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!file.name.endsWith(".csv")) {
       return NextResponse.json(
         { success: false, message: "File must be a CSV" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -76,7 +84,7 @@ export async function POST(request: NextRequest) {
     if (rows.length === 0) {
       return NextResponse.json(
         { success: false, message: "CSV is empty or invalid" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -124,10 +132,10 @@ export async function POST(request: NextRequest) {
       errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error: any) {
-    console.error("Upload error:", error);
+    logError("Upload error", error);
     return NextResponse.json(
       { success: false, message: error.message || "Upload failed" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
-import Nav from "@/components/Nav";
+import NavWrapper from "@/components/NavWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,7 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Retargeting Clients - Yousuf Rice",
-  description: "Call center retargeting dashboard for customer outreach and order management",
+  description:
+    "Call center retargeting dashboard for customer outreach and order management",
 };
 
 export default function RootLayout({
@@ -29,7 +31,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-50">
-        <Nav />
+        <Suspense fallback={<div className="h-16 border-b bg-white" />}>
+          <NavWrapper />
+        </Suspense>
         <main className="flex-1">{children}</main>
       </body>
     </html>

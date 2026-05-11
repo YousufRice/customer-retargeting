@@ -28,7 +28,11 @@ export default function OrderForm({
   ]);
   const [loading, setLoading] = useState(false);
 
-  const updateItem = (index: number, field: keyof AgentOrderItem, value: any) => {
+  const updateItem = (
+    index: number,
+    field: keyof AgentOrderItem,
+    value: any,
+  ) => {
     const newItems = [...items];
     newItems[index] = { ...newItems[index], [field]: value };
     if (field === "quantity_kg" || field === "price_per_kg") {
@@ -39,7 +43,10 @@ export default function OrderForm({
   };
 
   const addItem = () => {
-    setItems([...items, { product_name: "", quantity_kg: 1, price_per_kg: 0, total: 0 }]);
+    setItems([
+      ...items,
+      { product_name: "", quantity_kg: 1, price_per_kg: 0, total: 0 },
+    ]);
   };
 
   const removeItem = (index: number) => {
@@ -77,10 +84,12 @@ export default function OrderForm({
 
       setAddress("");
       setNotes("");
-      setItems([{ product_name: "", quantity_kg: 1, price_per_kg: 0, total: 0 }]);
+      setItems([
+        { product_name: "", quantity_kg: 1, price_per_kg: 0, total: 0 },
+      ]);
       onSuccess?.();
-    } catch (error) {
-      console.error(error);
+    } catch {
+      // Silenced
     } finally {
       setLoading(false);
     }
@@ -113,7 +122,9 @@ export default function OrderForm({
                 <input
                   type="text"
                   value={item.product_name}
-                  onChange={(e) => updateItem(index, "product_name", e.target.value)}
+                  onChange={(e) =>
+                    updateItem(index, "product_name", e.target.value)
+                  }
                   placeholder="Product name"
                   required
                   className="w-full border rounded-md px-3 py-2 text-sm"
@@ -124,7 +135,11 @@ export default function OrderForm({
                   type="number"
                   value={item.quantity_kg}
                   onChange={(e) =>
-                    updateItem(index, "quantity_kg", parseFloat(e.target.value) || 0)
+                    updateItem(
+                      index,
+                      "quantity_kg",
+                      parseFloat(e.target.value) || 0,
+                    )
                   }
                   placeholder="KG"
                   min="0.5"
@@ -138,7 +153,11 @@ export default function OrderForm({
                   type="number"
                   value={item.price_per_kg}
                   onChange={(e) =>
-                    updateItem(index, "price_per_kg", parseFloat(e.target.value) || 0)
+                    updateItem(
+                      index,
+                      "price_per_kg",
+                      parseFloat(e.target.value) || 0,
+                    )
                   }
                   placeholder="Price/kg"
                   min="0"

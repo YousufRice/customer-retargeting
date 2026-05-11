@@ -29,7 +29,7 @@ export interface UnifiedCustomer {
   email: string;
   city: string;
   lifetimeValue: number;
-  source: 'wordpress' | 'website' | 'both';
+  source: "wordpress" | "website";
   wordpressData?: WordPressCustomer;
   websiteData?: ExistingCustomer;
   lastOrderDate?: string;
@@ -42,7 +42,12 @@ export interface ExistingOrder {
   customer_id: string;
   address_id: string;
   total_price: number;
-  status: 'pending' | 'accepted' | 'out_for_delivery' | 'delivered' | 'returned';
+  status:
+    | "pending"
+    | "accepted"
+    | "out_for_delivery"
+    | "delivered"
+    | "returned";
   $createdAt: string;
 }
 
@@ -70,14 +75,14 @@ export interface ExistingAddress {
 
 // Call log
 export type CallResponseType =
-  | 'answered_ordered'
-  | 'answered_interested'
-  | 'answered_not_interested'
-  | 'callback_later'
-  | 'no_answer'
-  | 'wrong_number'
-  | 'dnd'
-  | 'not_reachable';
+  | "answered_ordered"
+  | "answered_interested"
+  | "answered_not_interested"
+  | "callback_later"
+  | "no_answer"
+  | "wrong_number"
+  | "dnd"
+  | "not_reachable";
 
 export interface CallLog {
   $id: string;
@@ -101,7 +106,12 @@ export interface AgentOrder {
   city: string;
   items: AgentOrderItem[];
   total_price: number;
-  status: 'pending' | 'confirmed' | 'out_for_delivery' | 'delivered' | 'cancelled';
+  status:
+    | "pending"
+    | "confirmed"
+    | "out_for_delivery"
+    | "delivered"
+    | "cancelled";
   agent_name: string;
   notes?: string;
   $createdAt: string;
@@ -122,7 +132,7 @@ export interface RetargetingCampaign {
   target_city?: string;
   min_value?: number;
   max_value?: number;
-  status: 'draft' | 'active' | 'paused' | 'completed';
+  status: "draft" | "active" | "paused" | "completed";
   created_by: string;
   $createdAt: string;
 }

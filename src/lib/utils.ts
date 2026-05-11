@@ -24,7 +24,8 @@ export function formatPhone(phone: string): string {
   return phone;
 }
 
-export function normalizePhone(phone: string): string {
+export function normalizePhone(phone: string | null | undefined): string {
+  if (!phone) return "";
   const digits = phone.replace(/\D/g, "");
   if (digits.startsWith("0") && digits.length === 11) {
     return "92" + digits.slice(1);
@@ -47,6 +48,45 @@ export function getResponseTypeLabel(type: string): string {
     not_reachable: "Not Reachable",
   };
   return labels[type] || type;
+}
+
+/**
+ * Recursively sanitize Appwrite documents to plain objects.
+ * Appwrite may return `Null` class instances for empty fields,
+ * which break Next.js Server → Client Component serialization.
+ */
+export function sanitizeAppwriteDoc<T>(doc: any): T {
+  if (doc === null || doc === undefined) return doc;
+  if (typeof doc !== "object") return doc;
+
+  // Handle arrays
+  if (Array.isArray(doc)) {
+    return doc.map((item) => sanitizeAppwriteDoc(item)) as unknown as T;
+  }
+
+  // Handle Appwrite Null class instance
+  if (doc.constructor && doc.constructor.name === "Null") {
+    return null as unknown as T;
+  }
+
+  const plain: Record<string, any> = {};
+  for (const key of Object.keys(doc)) {
+    const value = doc[key];
+    if (value === null || value === undefined) {
+      plain[key] = value;
+    } else if (typeof value === "object") {
+      if (value.constructor && value.constructor.name === "Null") {
+        plain[key] = null;
+      } else if (Array.isArray(value)) {
+        plain[key] = value.map((item) => sanitizeAppwriteDoc(item));
+      } else {
+        plain[key] = sanitizeAppwriteDoc(value);
+      }
+    } else {
+      plain[key] = value;
+    }
+  }
+  return plain as T;
 }
 
 export function getResponseTypeColor(type: string): string {

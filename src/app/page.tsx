@@ -1,8 +1,12 @@
 import Link from "next/link";
-import { searchUnifiedCustomers } from "@/lib/services/customer-service";
+import {
+  getWebsiteCustomers,
+  getWordPressCustomers,
+} from "@/lib/services/customer-service";
 import { getCallStats } from "@/lib/services/call-service";
 import { getAgentOrdersToday } from "@/lib/services/order-service";
 import { formatCurrency } from "@/lib/utils";
+import { getAgentName } from "@/lib/auth";
 import {
   Users,
   Phone,
@@ -14,14 +18,18 @@ import {
 } from "lucide-react";
 
 export default async function DashboardPage() {
-  const [customers, callStats, todayOrders] = await Promise.all([
-    searchUnifiedCustomers(""),
-    getCallStats(),
-    getAgentOrdersToday(),
-  ]);
+  const agentName = await getAgentName();
+  const [websiteCustomers, wpCustomers, callStats, todayOrders] =
+    await Promise.all([
+      getWebsiteCustomers(),
+      getWordPressCustomers(),
+      getCallStats(),
+      getAgentOrdersToday(),
+    ]);
 
-  const wpCount = customers.filter((c) => c.source === "wordpress" || c.source === "both").length;
-  const webCount = customers.filter((c) => c.source === "website" || c.source === "both").length;
+  const wpCount = wpCustomers.length;
+  const webCount = websiteCustomers.length;
+  const totalUnique = wpCount + webCount;
   const todayRevenue = todayOrders.reduce((sum, o) => sum + o.total_price, 0);
 
   const stats = [
@@ -41,7 +49,7 @@ export default async function DashboardPage() {
     },
     {
       label: "Total Unique",
-      value: customers.length,
+      value: totalUnique,
       icon: TrendingUp,
       color: "text-green-600",
       bg: "bg-green-50",
@@ -70,24 +78,34 @@ export default async function DashboardPage() {
   ];
 
   // Top customers by value
-  const topCustomers = [...customers]
+  // Combine for dashboard displays (website + deduplicated wordpress)
+  const allCustomers = [...websiteCustomers, ...wpCustomers];
+  const topCustomers = [...allCustomers]
     .sort((a, b) => b.lifetimeValue - a.lifetimeValue)
     .slice(0, 5);
 
   // Customers who haven't ordered recently (retargeting candidates)
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const retargetingCandidates = customers.filter(
-    (c) =>
-      !c.lastOrderDate || new Date(c.lastOrderDate) < thirtyDaysAgo
-  ).slice(0, 5);
+  const retargetingCandidates = allCustomers
+    .filter(
+      (c) => !c.lastOrderDate || new Date(c.lastOrderDate) < thirtyDaysAgo,
+    )
+    .slice(0, 5);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900">Retargeting Dashboard</h1>
+        <h1 className="text-3xl font-bold text-slate-900">
+          Retargeting Dashboard
+        </h1>
         <p className="text-slate-600 mt-1">
           Call center overview and customer retargeting metrics
+          {agentName && (
+            <span className="ml-2 text-orange-600 font-medium capitalize">
+              — Agent: {agentName}
+            </span>
+          )}
         </p>
       </div>
 
@@ -96,7 +114,10 @@ export default async function DashboardPage() {
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <div key={stat.label} className={`${stat.bg} rounded-lg p-4 border`}>
+            <div
+              key={stat.label}
+              className={`${stat.bg} rounded-lg p-4 border`}
+            >
               <div className="flex items-center justify-between mb-2">
                 <Icon className={`w-5 h-5 ${stat.color}`} />
               </div>
@@ -111,7 +132,9 @@ export default async function DashboardPage() {
         {/* Top Customers */}
         <div className="bg-white border rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-slate-900">Top Customers by Value</h2>
+            <h2 className="text-lg font-semibold text-slate-900">
+              Top Customers by Value
+            </h2>
             <Link
               href="/customers"
               className="text-sm text-orange-600 hover:text-orange-700 font-medium flex items-center gap-1"
@@ -127,14 +150,18 @@ export default async function DashboardPage() {
                 className="flex items-center justify-between p-3 rounded-md hover:bg-slate-50 transition-colors"
               >
                 <div>
-                  <p className="font-medium text-slate-900">{customer.fullName || "Unknown"}</p>
+                  <p className="font-medium text-slate-900">
+                    {customer.fullName || "Unknown"}
+                  </p>
                   <p className="text-xs text-slate-500">{customer.phone}</p>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-green-600">
                     {formatCurrency(customer.lifetimeValue)}
                   </p>
-                  <p className="text-xs text-slate-500">{customer.orderCount} orders</p>
+                  <p className="text-xs text-slate-500">
+                    {customer.orderCount} orders
+                  </p>
                 </div>
               </Link>
             ))}
@@ -144,7 +171,9 @@ export default async function DashboardPage() {
         {/* Retargeting Candidates */}
         <div className="bg-white border rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-slate-900">Retargeting Candidates</h2>
+            <h2 className="text-lg font-semibold text-slate-900">
+              Retargeting Candidates
+            </h2>
             <div className="flex items-center gap-1 text-amber-600">
               <AlertCircle className="w-4 h-4" />
               <span className="text-xs font-medium">No recent orders</span>
@@ -158,7 +187,9 @@ export default async function DashboardPage() {
                 className="flex items-center justify-between p-3 rounded-md hover:bg-slate-50 transition-colors"
               >
                 <div>
-                  <p className="font-medium text-slate-900">{customer.fullName || "Unknown"}</p>
+                  <p className="font-medium text-slate-900">
+                    {customer.fullName || "Unknown"}
+                  </p>
                   <p className="text-xs text-slate-500">{customer.phone}</p>
                 </div>
                 <div className="text-right">
@@ -166,7 +197,8 @@ export default async function DashboardPage() {
                     {formatCurrency(customer.lifetimeValue)}
                   </p>
                   <p className="text-xs text-slate-500">
-                    Last: {customer.lastOrderDate
+                    Last:{" "}
+                    {customer.lastOrderDate
                       ? new Date(customer.lastOrderDate).toLocaleDateString()
                       : "Never"}
                   </p>
@@ -212,7 +244,9 @@ export default async function DashboardPage() {
           </div>
           <div>
             <p className="font-medium text-slate-900">Call Logs</p>
-            <p className="text-xs text-slate-500">View call history & follow-ups</p>
+            <p className="text-xs text-slate-500">
+              View call history & follow-ups
+            </p>
           </div>
         </Link>
       </div>

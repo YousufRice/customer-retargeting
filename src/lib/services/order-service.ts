@@ -8,13 +8,17 @@ import {
   ID,
 } from "@/lib/appwrite";
 import { AgentOrder, AgentOrderItem } from "@/lib/types";
+import { logError } from "@/lib/logger";
 
 export async function getAgentOrders(
   customerPhone?: string,
-  limit = 100
+  limit = 100,
 ): Promise<AgentOrder[]> {
   try {
-    const queries: string[] = [Query.orderDesc("$createdAt"), Query.limit(limit)];
+    const queries: string[] = [
+      Query.orderDesc("$createdAt"),
+      Query.limit(limit),
+    ];
     if (customerPhone) {
       queries.push(Query.equal("customer_phone", customerPhone));
     }
@@ -25,7 +29,7 @@ export async function getAgentOrders(
     });
     return (response.rows || []) as unknown as AgentOrder[];
   } catch (error) {
-    console.error("Error fetching agent orders:", error);
+    logError("Error fetching agent orders", error);
     return [];
   }
 }
@@ -33,7 +37,11 @@ export async function getAgentOrders(
 export async function getAgentOrdersToday(): Promise<AgentOrder[]> {
   try {
     const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
     const response = await tablesDB.listRows({
       databaseId: RETARGETING_DATABASE_ID,
       tableId: AGENT_ORDERS_TABLE_ID,
@@ -45,7 +53,7 @@ export async function getAgentOrdersToday(): Promise<AgentOrder[]> {
     });
     return (response.rows || []) as unknown as AgentOrder[];
   } catch (error) {
-    console.error("Error fetching today's agent orders:", error);
+    logError("Error fetching today's agent orders", error);
     return [];
   }
 }
@@ -79,14 +87,14 @@ export async function createAgentOrder(data: {
     });
     return response as unknown as AgentOrder;
   } catch (error) {
-    console.error("Error creating agent order:", error);
+    logError("Error creating agent order", error);
     return null;
   }
 }
 
 export async function updateAgentOrderStatus(
   orderId: string,
-  status: AgentOrder["status"]
+  status: AgentOrder["status"],
 ): Promise<AgentOrder | null> {
   try {
     const response = await tablesDB.updateRow({
@@ -97,7 +105,7 @@ export async function updateAgentOrderStatus(
     });
     return response as unknown as AgentOrder;
   } catch (error) {
-    console.error("Error updating agent order:", error);
+    logError("Error updating agent order", error);
     return null;
   }
 }

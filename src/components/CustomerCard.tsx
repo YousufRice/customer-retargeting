@@ -2,11 +2,7 @@
 
 import Link from "next/link";
 import { UnifiedCustomer } from "@/lib/types";
-import {
-  formatCurrency,
-  formatPhone,
-  getResponseTypeColor,
-} from "@/lib/utils";
+import { formatCurrency, formatPhone, getResponseTypeColor } from "@/lib/utils";
 import { Phone, Mail, MapPin, ShoppingBag, Calendar } from "lucide-react";
 
 interface CustomerCardProps {
@@ -15,18 +11,11 @@ interface CustomerCardProps {
 
 export default function CustomerCard({ customer }: CustomerCardProps) {
   const sourceColor =
-    customer.source === "both"
-      ? "bg-green-100 text-green-800"
-      : customer.source === "website"
+    customer.source === "website"
       ? "bg-blue-100 text-blue-800"
       : "bg-orange-100 text-orange-800";
 
-  const sourceLabel =
-    customer.source === "both"
-      ? "Both"
-      : customer.source === "website"
-      ? "Website"
-      : "WordPress";
+  const sourceLabel = customer.source === "website" ? "Website" : "WordPress";
 
   return (
     <Link href={`/customers/${customer.phone}`}>

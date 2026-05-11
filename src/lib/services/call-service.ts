@@ -8,13 +8,17 @@ import {
   ID,
 } from "@/lib/appwrite";
 import { CallLog, CallResponseType } from "@/lib/types";
+import { logError } from "@/lib/logger";
 
 export async function getCallLogs(
   customerPhone?: string,
-  limit = 100
+  limit = 100,
 ): Promise<CallLog[]> {
   try {
-    const queries: string[] = [Query.orderDesc("$createdAt"), Query.limit(limit)];
+    const queries: string[] = [
+      Query.orderDesc("$createdAt"),
+      Query.limit(limit),
+    ];
     if (customerPhone) {
       queries.push(Query.equal("customer_phone", customerPhone));
     }
@@ -25,7 +29,7 @@ export async function getCallLogs(
     });
     return (response.rows || []) as unknown as CallLog[];
   } catch (error) {
-    console.error("Error fetching call logs:", error);
+    logError("Error fetching call logs", error);
     return [];
   }
 }
@@ -33,7 +37,11 @@ export async function getCallLogs(
 export async function getCallLogsToday(): Promise<CallLog[]> {
   try {
     const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate(),
+    );
     const response = await tablesDB.listRows({
       databaseId: RETARGETING_DATABASE_ID,
       tableId: CALL_LOGS_TABLE_ID,
@@ -45,7 +53,7 @@ export async function getCallLogsToday(): Promise<CallLog[]> {
     });
     return (response.rows || []) as unknown as CallLog[];
   } catch (error) {
-    console.error("Error fetching today's call logs:", error);
+    logError("Error fetching today's call logs", error);
     return [];
   }
 }
@@ -64,7 +72,7 @@ export async function getPendingFollowUps(): Promise<CallLog[]> {
     });
     return (response.rows || []) as unknown as CallLog[];
   } catch (error) {
-    console.error("Error fetching follow-ups:", error);
+    logError("Error fetching follow-ups", error);
     return [];
   }
 }
@@ -97,7 +105,7 @@ export async function createCallLog(data: {
     });
     return response as unknown as CallLog;
   } catch (error) {
-    console.error("Error creating call log:", error);
+    logError("Error creating call log", error);
     return null;
   }
 }
@@ -109,9 +117,11 @@ export async function getCallStats() {
   const stats = {
     totalCallsToday: today.length,
     answeredCalls: today.filter((c) =>
-      ["answered_ordered", "answered_interested", "answered_not_interested"].includes(
-        c.response_type
-      )
+      [
+        "answered_ordered",
+        "answered_interested",
+        "answered_not_interested",
+      ].includes(c.response_type),
     ).length,
     ordersToday: today.filter((c) => c.order_placed).length,
     pendingFollowUps: followUps.length,
