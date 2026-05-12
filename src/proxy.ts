@@ -10,6 +10,7 @@ export function proxy(request: NextRequest) {
   // Always allow login page and API routes
   if (
     pathname === "/login" ||
+    pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/login") ||
     pathname.startsWith("/api/logout")
   ) {

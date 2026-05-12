@@ -18,12 +18,8 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-
     try {
-      // Login with Appwrite email/password
       await appwriteAccount.createEmailPasswordSession(email, password);
-
-      // Get account info to identify the agent
       const account = await appwriteAccount.get();
       const labels = (account.labels || []).map((l: string) =>
         l.toLowerCase().trim(),
@@ -31,27 +27,20 @@ export default function LoginPage() {
       const matchedLabel = labels.find((l: string) =>
         ALLOWED_AGENTS.includes(l),
       );
-
       if (!matchedLabel) {
-        // Not an allowed agent — logout from Appwrite
         await appwriteAccount.deleteSession("current");
         setError("Access denied. Only authorized agents can log in.");
-        setLoading(false);
         return;
       }
-
-      // Set our own agent cookie for middleware checks
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ agent: matchedLabel }),
       });
-
       if (!res.ok) {
         setError("Session setup failed.");
         return;
       }
-
       router.push("/");
       router.refresh();
     } catch (err: any) {
