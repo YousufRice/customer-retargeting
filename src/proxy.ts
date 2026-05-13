@@ -1,24 +1,21 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const AGENT_COOKIE = "agent-session";
-const ALLOWED_AGENTS = ["saima", "kiran"];
+const AUTH_COOKIE = "auth-session";
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Always allow login page and API routes
   if (
     pathname === "/login" ||
-    pathname.startsWith("/api/auth") ||
     pathname.startsWith("/api/login") ||
     pathname.startsWith("/api/logout")
   ) {
     return NextResponse.next();
   }
 
-  const agent = request.cookies.get(AGENT_COOKIE)?.value;
-  if (!agent || !ALLOWED_AGENTS.includes(agent)) {
+  const authenticated = request.cookies.get(AUTH_COOKIE)?.value === "true";
+  if (!authenticated) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

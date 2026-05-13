@@ -11,10 +11,6 @@ export default function CallsPage() {
   const [followUps, setFollowUps] = useState<CallLog[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     setLoading(true);
     const [calls, followups] = await Promise.all([
@@ -25,6 +21,10 @@ export default function CallsPage() {
     setFollowUps(followups);
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const responseCounts = todayCalls.reduce((acc, call) => {
     acc[call.response_type] = (acc[call.response_type] || 0) + 1;

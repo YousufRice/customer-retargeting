@@ -1,17 +1,15 @@
 import { cookies } from "next/headers";
 
-export const AGENT_COOKIE = "agent-session";
-export const ALLOWED_AGENTS = ["saima", "kiran"];
-
-export async function getAgentName(): Promise<string | undefined> {
-  const cookieStore = await cookies();
-  const agent = cookieStore.get(AGENT_COOKIE)?.value;
-  if (agent && ALLOWED_AGENTS.includes(agent)) {
-    return agent;
-  }
-  return undefined;
-}
+export const AUTH_COOKIE = "auth-session";
 
 export async function isAuthenticated(): Promise<boolean> {
-  return !!(await getAgentName());
+  const cookieStore = await cookies();
+  return cookieStore.get(AUTH_COOKIE)?.value === "true";
+}
+
+export async function getAgentName(): Promise<string | undefined> {
+  if (await isAuthenticated()) {
+    return "Agent";
+  }
+  return undefined;
 }

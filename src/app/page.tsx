@@ -6,7 +6,6 @@ import {
 import { getCallStats } from "@/lib/services/call-service";
 import { getAgentOrdersToday } from "@/lib/services/order-service";
 import { formatCurrency } from "@/lib/utils";
-import { getAgentName } from "@/lib/auth";
 import {
   Users,
   Phone,
@@ -18,7 +17,6 @@ import {
 } from "lucide-react";
 
 export default async function DashboardPage() {
-  const agentName = await getAgentName();
   const [websiteCustomers, wpCustomers, callStats, todayOrders] =
     await Promise.all([
       getWebsiteCustomers(),
@@ -101,11 +99,9 @@ export default async function DashboardPage() {
         </h1>
         <p className="text-slate-600 mt-1">
           Call center overview and customer retargeting metrics
-          {agentName && (
-            <span className="ml-2 text-orange-600 font-medium capitalize">
-              — Agent: {agentName}
-            </span>
-          )}
+          <span className="ml-2 text-orange-600 font-medium">
+            — Agent dashboard
+          </span>
         </p>
       </div>
 

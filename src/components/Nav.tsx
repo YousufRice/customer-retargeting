@@ -11,10 +11,8 @@ import {
   Upload,
   Target,
   LogOut,
-  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { appwriteAccount } from "@/lib/appwrite-auth";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -33,11 +31,6 @@ export default function Nav({ agentName }: NavProps) {
   const router = useRouter();
 
   const handleLogout = async () => {
-    try {
-      await appwriteAccount.deleteSession("current");
-    } catch {
-      // ignore if already logged out
-    }
     await fetch("/api/logout", { method: "POST" });
     router.push("/login");
     router.refresh();
@@ -77,10 +70,6 @@ export default function Nav({ agentName }: NavProps) {
 
           {agentName && (
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 text-sm text-slate-300">
-                <User className="w-4 h-4" />
-                <span className="capitalize">{agentName}</span>
-              </div>
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-1 text-sm text-slate-400 hover:text-white transition-colors"

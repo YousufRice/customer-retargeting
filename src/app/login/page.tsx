@@ -3,13 +3,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Target, LogIn } from "lucide-react";
-import { appwriteAccount } from "@/lib/appwrite-auth";
-
-const ALLOWED_AGENTS = ["saima", "kiran"];
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,32 +15,20 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await appwriteAccount.createEmailPasswordSession(email, password);
-      const account = await appwriteAccount.get();
-      const labels = (account.labels || []).map((l: string) =>
-        l.toLowerCase().trim(),
-      );
-      const matchedLabel = labels.find((l: string) =>
-        ALLOWED_AGENTS.includes(l),
-      );
-      if (!matchedLabel) {
-        await appwriteAccount.deleteSession("current");
-        setError("Access denied. Only authorized agents can log in.");
-        return;
-      }
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ agent: matchedLabel }),
+        body: JSON.stringify({ password }),
       });
       if (!res.ok) {
-        setError("Session setup failed.");
+        const data = await res.json();
+        setError(data.error || "Invalid password");
         return;
       }
       router.push("/");
       router.refresh();
-    } catch (err: any) {
-      setError(err?.message || "Invalid email or password.");
+    } catch {
+      setError("Login failed");
     } finally {
       setLoading(false);
     }
@@ -59,20 +43,6 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full border rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-              placeholder="agent@example.com"
-            />
-          </div>
-
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
               Password
