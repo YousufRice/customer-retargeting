@@ -11,16 +11,16 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
 
-  useEffect(() => {
-    loadOrders();
-  }, []);
-
   const loadOrders = async () => {
     setLoading(true);
     const data = await getAgentOrders(undefined, 200);
     setOrders(data);
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadOrders();
+  }, []);
 
   const handleStatusUpdate = async (orderId: string, status: AgentOrder["status"]) => {
     await updateAgentOrderStatus(orderId, status);
