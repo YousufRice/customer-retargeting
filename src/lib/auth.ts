@@ -1,10 +1,12 @@
 import { cookies } from "next/headers";
-
-export const AUTH_COOKIE = "auth-session";
+import { SESSION_COOKIE, decrypt } from "./session";
 
 export async function isAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies();
-  return cookieStore.get(AUTH_COOKIE)?.value === "true";
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!token) return false;
+  const payload = await decrypt(token);
+  return payload !== null;
 }
 
 export async function getAgentName(): Promise<string | undefined> {
